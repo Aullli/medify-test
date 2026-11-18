@@ -1,4 +1,6 @@
-<form method="POST">
+{{-- resources/views/master_items/form/form.blade.php --}}
+{{-- Tanpa atribut action: form submit ke URL halaman ini (sama seperti form lama) --}}
+<form method="POST" enctype="multipart/form-data">
     @csrf
     @if($method == 'edit')
     <div class="form-group">
@@ -9,20 +11,20 @@
 
     <div class="form-group">
         <label>Nama</label>
-        <input type="text" class="form-control" name="nama" required  value="{{$item->nama ?? ''}}">
+        <input type="text" class="form-control" name="nama" required value="{{ old('nama', $item->nama ?? '') }}">
     </div>
 
     <div class="form-group">
         <label>Harga Beli</label>
-        <input type="number" class="form-control" name="harga_beli" required  value="{{$item->harga_beli ?? ''}}">
+        <input type="number" class="form-control" name="harga_beli" required value="{{ old('harga_beli', $item->harga_beli ?? '') }}">
     </div>
 
     <div class="form-group">
         <label>Laba (dalam persen)</label>
-        <input type="number" class="form-control" name="laba" required  value="{{$item->laba ?? ''}}">
+        <input type="number" class="form-control" name="laba" required value="{{ old('laba', $item->laba ?? '') }}">
     </div>
 
-    @php $selected = $item->supplier ?? ''; @endphp
+    @php $selected = old('supplier', $item->supplier ?? ''); @endphp
     <div class="form-group">
         <label>Supplier</label>
         <select class="form-control" required name="supplier">
@@ -31,11 +33,11 @@
             <option @if($selected == 'Bukulapuk') selected @endif>Bukulapuk</option>
             <option @if($selected == 'TokoBagas') selected @endif>TokoBagas</option>
             <option @if($selected == 'E Commurz') selected @endif>E Commurz</option>
-            <optio @if($selected == 'Blublu') selected @endif>Blublu</option>
+            <option @if($selected == 'Blublu') selected @endif>Blublu</option>
         </select>
     </div>
 
-    @php $selected = $item->jenis ?? ''; @endphp
+    @php $selected = old('jenis', $item->jenis ?? ''); @endphp
     <div class="form-group">
         <label>Jenis</label>
         <select class="form-control" required name="jenis">
@@ -43,9 +45,34 @@
             <option @if($selected == 'Obat') selected @endif>Obat</option>
             <option @if($selected == 'Alkes') selected @endif>Alkes</option>
             <option @if($selected == 'Matkes') selected @endif>Matkes</option>
-            <optio @if($selected == 'Umum') selected @endif>Umum</option>
-            <optio @if($selected == 'ATK') selected @endif>ATK</option>
+            <option @if($selected == 'Umum') selected @endif>Umum</option>
+            <option @if($selected == 'ATK') selected @endif>ATK</option>
         </select>
+    </div>
+
+    {{-- FOTO --}}
+    <div class="form-group">
+        <label>Foto</label>
+        <input type="file" class="form-control" name="foto" accept=".jpg,.jpeg,.png,.webp">
+        @if(!empty($item) && !empty($item->foto))
+            <img src="{{ asset('storage/' . $item->foto) }}" width="120" class="mt-2" alt="Foto item">
+        @endif
+    </div>
+
+    {{-- KATEGORI (many to many) --}}
+    @php
+        $selectedCategories = old('categories', !empty($item) ? $item->categories->pluck('id')->all() : []);
+    @endphp
+    <div class="form-group">
+        <label>Kategori</label>
+        <select class="form-control" name="categories[]" multiple>
+            @foreach($categories as $cat)
+                <option value="{{ $cat->id }}" @if(in_array($cat->id, $selectedCategories)) selected @endif>
+                    {{ $cat->nama }} ({{ $cat->kode }})
+                </option>
+            @endforeach
+        </select>
+        <small class="text-muted">Tahan Ctrl untuk memilih lebih dari satu.</small>
     </div>
 
     <button class="btn btn-primary mt-3">Submit</button>
